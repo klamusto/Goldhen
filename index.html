@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>PS4 GoldHen</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<video id="bgVideo" class="bg-video" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="media/poster.jpg">
+    <source src="media/background.mp4" type="video/mp4">
+</video>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<main class="shell">
+    <header class="brand">
+        <span class="kicker">PlayStation 4</span>
+        <h1 class="word">GoldHen</h1>
+        <p class="tagline">Exploit Host &middot; 5.05 &mdash; 14.02 &middot; offline ready</p>
+    </header>
+
+    <div class="fw-chip">
+        <span class="dot"></span>
+        <span>Firmware</span>
+        <strong id="fwValue">detecting&hellip;</strong>
+    </div>
+
+    <section class="card">
+        <div id="msgs" class="status">Preparing&hellip;</div>
+        <div class="bar-wrap" id="barWrap" hidden><div class="bar" id="bar"></div></div>
+        <div class="actions">
+            <button type="button" class="btn btn-gold" id="bgBtn" hidden>Resume wallpaper</button>
+            <button type="button" class="btn" id="reloadBtn">Reload</button>
+        </div>
+    </section>
+
+    <div id="preview" class="preview" hidden>
+        <p class="preview-title">This is a PS4 exploit host.</p>
+        <p class="preview-body">Open this page in the PS4 web browser on firmware 5.05 or 7.00 &ndash; 14.02. On the first visit the offline cache installs, then the console can run it without internet.</p>
+    </div>
+
+    <div class="links" id="links" hidden>
+        <span>Other hosts:</span>
+        <a href="505/index.html">5.05</a>
+        <a href="672/index.html">6.72</a>
+        <a href="672goldhen/index.html">6.72 GoldHEN</a>
+        <a href="900goldhen/index.html">9.00</a>
+        <a href="900v3/index.html">9.00 v3</a>
+        <a href="restore/index.html">Restore</a>
+    </div>
+
+    <footer class="credits">
+        <span class="mark">PS4 GoldHen</span>
+        <span class="sep">&middot;</span>
+        <span>by Abdellah</span>
+        <span class="sep">&middot;</span>
+        <span>@klamust</span>
+    </footer>
+</main>
+
+<script>
+(function () {
+    "use strict";
+
+    var msgs = document.getElementById("msgs");
+    var fwEl = document.getElementById("fwValue");
+    var barWrap = document.getElementById("barWrap");
+    var bar = document.getElementById("bar");
+    var barTimer = null;
+    var vid = document.getElementById("bgVideo");
+    var bgBtn = document.getElementById("bgBtn");
+    var links = document.getElementById("links");
+    var preview = document.getElementById("preview");
+
+    var ua = navigator.userAgent || "";
+    var match = ua.match(/PlayStation 4[ \/]([\d.]+)/i);
+    var isPS4 = match !== null;
+    var fw = isPS4 ? match[1] : "Unknown";
+    var fwNum = parseFloat(fw);
+
+    function say(html) {
+        if (msgs) msgs.innerHTML = html;
+    }
+
+    function showLinks() {
+        if (links) links.hidden = false;
+    }
+
+    function showProgress() {
+        if (!barWrap) return;
+        barWrap.hidden = false;
+        var p = 0;
+        bar.style.width = "0%";
+        say("Starting&hellip;");
+        barTimer = setInterval(function () {
+            p += Math.max(1, Math.round((92 - p) / 14));
+            if (p > 92) p = 92;
+            bar.style.width = p + "%";
+        }, 180);
+    }
+
+    function stopProgress() {
+        if (barTimer) { clearInterval(barTimer); barTimer = null; }
+    }
+
+    function tryPlay() {
+        if (!vid) return;
+        vid.muted = true;
+        var p = vid.play();
+        if (p && p.then) {
+            p.then(function () { if (bgBtn) bgBtn.hidden = true; })
+             .catch(function () { if (bgBtn) bgBtn.hidden = false; });
+        }
+    }
+
+    if (vid) {
+        vid.addEventListener("ended", function () {
+            try { vid.currentTime = 0; vid.play(); } catch (e) {}
+        });
+        vid.addEventListener("error", function () {
+            try { vid.style.display = "none"; } catch (e) {}
+        });
+        tryPlay();
+    }
+
+    if (bgBtn) {
+        bgBtn.addEventListener("click", function () {
+            if (!vid) return;
+            vid.play();
+            bgBtn.hidden = true;
+        });
+    }
+
+    document.getElementById("reloadBtn").addEventListener("click", function () {
+        location.reload();
+    });
+
+    function pauseForExploit() {
+        if (vid) {
+            try { vid.pause(); } catch (e) {}
+        }
+        document.body.classList.add("running");
+        if (bgBtn) bgBtn.hidden = false;
+    }
+
+    function addScript(src, isModule, onload) {
+        var s = document.createElement("script");
+        if (isModule) s.type = "module";
+        s.src = src;
+        s.onerror = function () {
+            stopProgress();
+            say("Content not Found! &mdash; clear browser data and re-install the cache.");
+            document.body.classList.remove("running");
+        };
+        if (onload) s.onload = onload;
+        document.head.appendChild(s);
+    }
+
+    function runExploit() {
+        pauseForExploit();
+        showProgress();
+
+        if (fwNum === 5.05 || fwNum === 5.07) {
+            addScript("fw505/exploit.js");
+        } else if (fwNum >= 7.00 && fwNum <= 8.52) {
+            addScript("700/alert.js", true);
+        } else if (fwNum >= 9.00 && fwNum <= 9.60) {
+            addScript("900/alert.js", true);
+        } else if (fwNum >= 10.00 && fwNum <= 11.02) {
+            addScript("css/main.js", false, function () {
+                setTimeout(function () {
+                    if (typeof window.doJb === "function") window.doJb();
+                }, 500);
+            });
+        } else if (fwNum === 11.50 || fwNum === 11.52) {
+            addScript("slopkit/chain_lapse.js", true);
+        } else if (fwNum >= 12.00 && fwNum <= 14.02) {
+            addScript("slopkit/jb.js", true);
+        } else {
+            stopProgress();
+            say('Unsupported firmware: <span style="color:#ff6b6b">' + fw + "</span>");
+            showLinks();
+        }
+    }
+
+    function route() {
+        if (!isPS4) {
+            fwEl.textContent = "not a PS4";
+            say("Open this host on a PlayStation 4.");
+            if (preview) preview.hidden = false;
+            showLinks();
+            return;
+        }
+
+        fwEl.textContent = fw;
+        var appCache = window.applicationCache;
+
+        if (!appCache || appCache.status === 0) {
+            say("Installing offline cache&hellip;");
+            if (fwNum === 5.05 || fwNum === 5.07) {
+                location.replace("cache505.html");
+            } else if (fwNum >= 7.00 && fwNum <= 8.52) {
+                location.replace("cache700.html");
+            } else if (fwNum >= 9.00 && fwNum <= 9.60) {
+                location.replace("cache900.html");
+            } else if (fwNum >= 10.00 && fwNum <= 11.02) {
+                location.replace("cachecss.html");
+            } else if (fwNum >= 11.50 && fwNum <= 14.02) {
+                location.replace("cacheslopkit.html");
+            } else {
+                say('Unsupported firmware: <span style="color:#ff6b6b">' + fw + "</span>");
+                showLinks();
+            }
+            return;
+        }
+
+        say("Loading GoldHEN v2.4b18.14&hellip; Please wait");
+        runExploit();
+    }
+
+    route();
+})();
+</script>
+</body>
+</html>

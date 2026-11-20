@@ -1,0 +1,16 @@
+CACHE MANIFEST
+# PS4 GoldHen by Abdellah (@klamust)
+# Offline cache
+
+CACHE:
+index.html
+style.css
+cache.js
+img.jpg
+media/background.mp4
+media/poster.jpg
+goldhen_2.4b18.14.bin
+fw505/exploit.js
+
+NETWORK:
+*
