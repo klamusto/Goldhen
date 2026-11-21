@@ -5,67 +5,93 @@
     var msgs = document.getElementById("msgs");
     var bar = document.getElementById("bar");
     var wrap = document.getElementById("barWrap");
-    var cont = document.getElementById("continue");
     var vid = document.getElementById("bgVideo");
-    var bgBtn = document.getElementById("bgBtn");
+    var tapHint = document.getElementById("tapHint");
+    var reload = document.getElementById("reloadBtn");
+    var leaving = false;
 
     function say(html) { if (msgs) msgs.innerHTML = html; }
     function setBar(p) { if (bar) bar.style.width = p + "%"; }
 
-    function done(text) {
-        if (wrap) wrap.hidden = false;
-        setBar(100);
-        say(text);
-        if (cont) cont.hidden = false;
-        document.body.classList.remove("running");
-    }
-
-    function fail(text) {
-        say(text);
-    }
-
-    function tryPlay() {
+    function startVideo() {
         if (!vid) return;
-        vid.muted = true;
-        var p = vid.play();
+        try {
+            vid.muted = true;
+            vid.loop = true;
+        } catch (e) {}
+        var p = null;
+        try { p = vid.play(); } catch (e) {}
         if (p && p.then) {
-            p.then(function () { if (bgBtn) bgBtn.hidden = true; })
-             .catch(function () { if (bgBtn) bgBtn.hidden = false; });
+            p.then(function () {
+                if (tapHint) tapHint.hidden = true;
+            }).catch(function () {
+                if (tapHint) tapHint.hidden = false;
+            });
         }
     }
 
     if (vid) {
         vid.addEventListener("ended", function () {
             try { vid.currentTime = 0; vid.play(); } catch (e) {}
-        });
+        }, false);
+        vid.addEventListener("playing", function () {
+            if (tapHint) tapHint.hidden = true;
+        }, false);
+        vid.addEventListener("canplay", startVideo, false);
         vid.addEventListener("error", function () {
             try { vid.style.display = "none"; } catch (e) {}
-        });
-        tryPlay();
+        }, false);
+
+        startVideo();
+        setTimeout(function () {
+            if (vid && vid.paused && tapHint) tapHint.hidden = false;
+        }, 2200);
+
+        var kick = function () {
+            startVideo();
+            document.removeEventListener("click", kick, false);
+            document.removeEventListener("touchstart", kick, false);
+            document.removeEventListener("keydown", kick, false);
+        };
+        document.addEventListener("click", kick, false);
+        document.addEventListener("touchstart", kick, false);
+        document.addEventListener("keydown", kick, false);
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) startVideo();
+        }, false);
     }
 
-    if (bgBtn) {
-        bgBtn.addEventListener("click", function () {
-            if (!vid) return;
-            vid.play();
-            bgBtn.hidden = true;
-        });
+    if (reload) {
+        reload.addEventListener("click", function () {
+            location.reload();
+        }, false);
     }
 
-    if (cont) {
-        cont.addEventListener("click", function () {
-            location.href = "index.html";
-        });
+    function leave() {
+        if (leaving) return;
+        leaving = true;
+        location.href = "index.html";
+    }
+
+    function done(text) {
+        if (wrap) wrap.hidden = false;
+        setBar(100);
+        say(text);
+        setTimeout(leave, 1600);
+    }
+
+    function fail(text) {
+        say(text);
     }
 
     var ac = window.applicationCache;
     if (!ac) {
-        if (cont) cont.hidden = false;
-        fail("This browser does not support offline cache installation. You can still use the host while online.");
+        fail("This browser does not support the offline cache. Press Reload to try again.");
         return;
     }
 
     if (wrap) wrap.hidden = false;
+    setBar(0);
     say("Checking offline cache&hellip;");
 
     ac.addEventListener("checking", function () {
@@ -87,23 +113,23 @@
     }, false);
 
     ac.addEventListener("cached", function () {
-        done("Offline cache installed successfully.");
+        done("Offline cache installed. Starting&hellip;");
     }, false);
 
     ac.addEventListener("updateready", function () {
         try { ac.swapCache(); } catch (e) {}
-        done("Offline cache updated successfully.");
+        done("Offline cache updated. Starting&hellip;");
     }, false);
 
     ac.addEventListener("noupdate", function () {
-        done("Offline cache is already installed.");
+        done("Offline cache is ready. Starting&hellip;");
     }, false);
 
     ac.addEventListener("error", function () {
-        fail("Cache error &mdash; clear the browser data, then open this page again.");
+        fail("Cache error &mdash; check the connection, then press Reload.");
     }, false);
 
     try {
-        if (ac.status === ac.UNCACHED) ac.update();
+        ac.update();
     } catch (e) {}
 })();
