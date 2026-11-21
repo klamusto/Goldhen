@@ -6,7 +6,7 @@ re-skinned by **Abdellah (@klamust)**.
 - Firmwares: `5.05` `5.07` `7.00 - 8.52` `9.00 - 9.60` `10.00 - 11.02` `11.50 - 14.02`
 - Auto firmware detection, automatic exploit selection
 - Offline cache (ApplicationCache) so the console runs without internet after the first install
-- Looping 1080p animated wallpaper (`media/background.mp4`), restarts automatically
+- Looping 1080p animated wallpaper (`media/wallpaper.mp4`), restarts automatically
 
 ## Layout
 
@@ -45,5 +45,5 @@ browser needs for the offline cache to install.
 - Host chain and payloads: the PS4 homebrew scene (GoldHEN, psfree, lapse, slopkit and contributors).
 - Interface, branding and offline packaging: **Abdellah — @klamust**.
 - Live wallpaper: MoeWalls ("Sasuke X Aoda"), transcoded to 1080p30 H.264 so the PS4
-  decoder and the offline cache can handle it. Replace `media/background.mp4` (and
-  `media/poster.jpg`) with the same conversion if you change the clip.
+  decoder and the offline cache can handle it. Replace `media/wallpaper.mp4` (and
+  `media/wallpaper.jpg`) with the same conversion if you change the clip.
