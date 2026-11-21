@@ -62,7 +62,12 @@
     }
 
     if (reload) {
-        reload.addEventListener("click", function () {
+        reload.addEventListener("click", function (ev) {
+            if (vid && vid.paused) {
+                if (ev) ev.preventDefault();
+                startVideo();
+                return;
+            }
             location.reload();
         }, false);
     }
